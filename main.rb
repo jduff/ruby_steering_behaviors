@@ -14,15 +14,16 @@ require 'gosu'
 class App < Gosu::Window
   def initialize
     super(800, 600, false)
-    a = Vector2d.new(2,2)
-    b = Vector2d.new(1,3)
-#    puts "#{a.x}, #{a.y}, len:#{a.length}"
-    c = a.add!(b)
-    puts "#{c.x}, #{c.y}, len:#{c.length}"
-    puts "#{a.x}, #{a.y}, len:#{a.length}"
+    @v = Vehicle.new
+    @old_time = Gosu::milliseconds
   end
 
   def update
+    @time = Gosu::milliseconds
+    d_time = @time - @old_time
+    @old_time = @time
+    @v.update(d_time)
+    puts @v.to_s
   end
 
   def draw
@@ -32,6 +33,6 @@ class App < Gosu::Window
   end
 end
 
-App.new
+App.new.show
 
 

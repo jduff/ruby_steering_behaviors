@@ -13,6 +13,11 @@ class Vector2d
     @normalized = false
   end
 
+  def zero
+    self.x = 0
+    self.y = 0
+  end
+
   def length
     @length ||= Math.sqrt(length_sq)
   end
@@ -56,6 +61,12 @@ class Vector2d
   def mult!(n)
     self.x *= n
     self.y *= n
+    self
+  end
+
+  def sub!(v)
+    self.x -= v.x
+    self.y -= v.y
     self
   end
   

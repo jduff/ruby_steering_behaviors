@@ -1,5 +1,4 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
-require 'bigdecimal'
 
 describe Vector2d do
   context "a new vector" do
