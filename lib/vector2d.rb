@@ -13,9 +13,13 @@ class Vector2d
     @normalized = false
   end
 
-  def zero
+  def zero!
     self.x = 0
     self.y = 0
+  end
+
+  def zero?
+    @x == 0 && @y == 0
   end
 
   def length
@@ -25,7 +29,37 @@ class Vector2d
   def length_sq
     @length_sq ||= @x*@x + @y*@y
   end
+
+  def x=(x)
+    clear_memo
+    @x = Float(x)
+  end
   
+  def y=(y)
+    clear_memo
+    @y = Float(y)
+  end
+
+  def normalize
+    Vector2d.new(@x/length, @y/length)
+  end
+
+  def +(v)
+    Vector2d.new(@x + v.x, @y + v.y)
+  end
+  
+  def /(n)
+    Vector2d.new(@x/n, @y/n)
+  end
+  
+  def *(n)
+    Vector2d.new(@x*n, @y*n)
+  end
+
+  def -(v)
+    Vector2d.new(@x - v.x, @y - v.y)
+  end
+
   def normalize!
     return self if @normalized
     @x /= length
@@ -34,51 +68,12 @@ class Vector2d
     @normalized = true
     self
   end
-
-  def x=(x)
-    clear_memo
-    @x = x
-  end
-  
-  def y=(y)
-    clear_memo
-    @y = y
-  end
-
-
-  def add!(v)
-    self.x += v.x
-    self.y += v.y
-    self
-  end
-
-  def div!(n)
-    self.x /= n
-    self.y /= n
-    self
-  end
-
-  def mult!(n)
-    self.x *= n
-    self.y *= n
-    self
-  end
-
-  def sub!(v)
-    self.x -= v.x
-    self.y -= v.y
-    self
-  end
   
   def truncate!(max)
-    teta = Math.acos(x/length)
-    self.x = max * Math.cos(teta)
-    self.y = max * Math.sin(teta)
-    self
-  end
-
-  def truncate(max)
-    self.normalize!.mult!(max)# if length > max
+    return if length < max
+    normalize!
+    self.x *= max
+    self.y *= max
   end
 
   def dot(vector)
@@ -89,26 +84,16 @@ class Vector2d
     Vector2d.new(-@y, @x)
   end
 
+  def angle
+    theta = Math.acos(-@y/length) * 180 / Math::PI
+    if @x < 0
+      return theta * -1
+    end
+    
+    return theta
+  end
+
   def to_s
-    format("<%.3f,%.3f>", @x, @y)
+    format("(%.2f, %.2f)", @x, @y)
   end
 end
-
-#   def normalize
-#     Vector2d.new(@x/length, @y/length)
-#   end
-#   def add(v)
-#     Vector2d.new(@x + v.x, @y + v.y)
-#   end
-#   def div(n)
-#     Vector2d.new(@x/n, @y/n)
-#   end
-#   def mult(n)
-#     Vector2d.new(@x*n, @y*n)
-#   end
-  
-#   def truncate(max)
-#     #teta = Math.acos(x/length)
-#     #Vector2d.new(n * Math.cos(teta), n * Math.sin(teta))
-#     self.normalize! * max if length > max
-#   end
