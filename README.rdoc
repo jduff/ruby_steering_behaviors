@@ -3,7 +3,7 @@
 This is an implementation of the steering behaviors as seen in:
 http://www.red3d.com/cwr/steer/
 
-There is a basic app, with 3 behaviors implemented:
+There is a basic app, with 4 behaviors implemented:
 * Seek
 * Flee
 * Arrive
