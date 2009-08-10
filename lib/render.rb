@@ -8,6 +8,10 @@ class Render
       @window = window
     end
 
+    def clip_to(x, y, w, h, &block)
+      @window.clip_to(x.to_i, y.to_i, w.to_i, h.to_i, &block)
+    end
+
     def set_viewport(viewport)
       @viewport = viewport
     end

@@ -48,11 +48,13 @@ class Viewport
 
   def draw
     last_viewport = Render.viewport
-    Render.set_viewport(self)
-    @entities.each do |e|
-      e.draw
+    Render.clip_to(@x,@y,@w,@h) do
+      Render.set_viewport(self)
+      @entities.each do |e|
+        e.draw
+      end    
+      Render.borders(:x => @x, :y => @y, :w => @w, :h => @h)
     end
-    Render.borders(:x => @x, :y => @y, :w => @w, :h => @h)
     Render.set_viewport(last_viewport)
   end
 
