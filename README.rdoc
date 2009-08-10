@@ -16,9 +16,17 @@ More to come!
 * Gosu gem
 
 == Operation
+There are 3 agents in the demo app.
 Use your mouse, clicking on the screen will set a mark.
-The white vehicle will try to arrive to it, while the green one will flee from it.
-The red one will try to pursue the white one.
+The green agent will flee from it.
+The white agent will try to arrive to it.
+The red one will pursue the white one.
 
-Press D to hide the text.
-Esc to leave the demo.
+Press D to hide the text. Esc to leave the demo.
+
+== Comments
+There is a Viewport class to that I created so I could play with my vehicles on a very large space. Think of it as a sandbox that you can configure to an arbitrary size. And right now it wraps around, treating the viewport as a toroid.
+For example, you can have a 4000x3000 virtual space inside a 800x600 viewport inside your real 1024x768 screen.
+I implemented this because I'm planning to showcase the behaviors each on a different viewport, but all in the same screen at once.
+I think it might be used to implement a minimap, maybe?
+

@@ -36,7 +36,7 @@ class Viewport
     Render.set_viewport(self)
     @entities.each do |e|
       e.draw
-    end    
+    end
     Render.borders(:x => @x, :y => @y, :w => @w, :h => @h)
     Render.set_viewport(last_viewport)
   end
