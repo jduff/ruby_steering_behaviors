@@ -33,7 +33,13 @@ module Keys
 end
   
 
-class App < Gosu::Window
+class Game < Gosu::Window
+  @debug = true
+
+  class << self
+    attr_reader :debug
+  end
+  
   def initialize
     @w = 1024
     @h = 768
@@ -48,6 +54,7 @@ class App < Gosu::Window
     init_render
     init_viewports
     init_entities
+    init_events
     #init_pointer
   end
 
@@ -89,7 +96,9 @@ class App < Gosu::Window
     @viewports[:game].add_entity(@vehicle)
     @viewports[:game].add_entity(@v2)
     @viewports[:game].add_entity(@v3)
+  end
 
+  def init_events
     register_listener(@viewports[:game], :l_click)
     
     @viewports[:game].on(:l_click) do
@@ -102,7 +111,7 @@ class App < Gosu::Window
       @v3.target = Vector2d.new(@viewports[:game].to_viewport_x(mouse_x), @viewports[:game].to_viewport_y(mouse_y))
     end
   end
-
+  
   def init_pointer
     set_mouse_position(@w/2, @h/2)
   end
@@ -152,12 +161,10 @@ class App < Gosu::Window
   end
 
   def on(event)
-    puts @events[event]
     @events[event] && @events[event].each do |l|
-      puts event
-      l.ex(event)
+      l.fire(event)
     end
   end
 end
 
-App.new.show
+Game.new.show

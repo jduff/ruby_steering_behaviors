@@ -22,13 +22,13 @@ class Viewport
   end
 
   def on(event, &block)
-    @listening ||= Hash.new
-    @listening[event] = block
+    @events ||= Hash.new
+    @events[event] = block
   end
 
-  def ex(event)
-    puts @listening
-    @listening[event].call
+  def fire(event)
+    puts "Viewport: #{event}" if Game::debug
+    @events[event].call
   end
   
   def update(elapsed_t)
