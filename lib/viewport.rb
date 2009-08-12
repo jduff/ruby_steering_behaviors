@@ -21,6 +21,16 @@ class Viewport
     @entities << entity
   end
 
+  def on(event, &block)
+    @listening ||= Hash.new
+    @listening[event] = block
+  end
+
+  def ex(event)
+    puts @listening
+    @listening[event].call
+  end
+  
   def update(elapsed_t)
     @entities.each do |e|
       e.update(elapsed_t)
@@ -42,27 +52,27 @@ class Viewport
   end
 
   # Screen coordinates to local viewport
-  def screen_to_viewport_x(x)
-    @x + @w * x / @virtual_w
+  def to_screen_x(x)
+    @x + x * @w / @virtual_w
   end
 
-  def screen_to_viewport_y(y)
-    @y + @h * y / @virtual_h
+  def to_screen_y(y)
+    @y + y * @h / @virtual_h
   end
 
-  def viewport_to_screen_x(x)
+  def to_viewport_x(x)
     (x - @x) * @virtual_w / @w
   end
 
-  def viewport_to_screen_y(y)
+  def to_viewport_y(y)
     (y - @y) * @virtual_h / @h
   end
 
-  def local_factor_x
+  def screen_factor_x
     @w/@virtual_w
   end
 
-  def local_factor_y
+  def screen_factor_y
     @h/@virtual_h
   end
 end

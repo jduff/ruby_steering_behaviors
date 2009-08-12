@@ -14,10 +14,24 @@ require 'vector2d'
 require 'vehicle'
 require 'gosu'
 require 'viewport'
+require 'set'
 
 module ZOrder
   Viewport, Entity, UI, Pointer, Debug = *0..4
 end
+
+module Keys
+  @keys = {
+    Gosu::Button::KbLeft => :left,
+    Gosu::Button::MsLeft => :l_click,
+    Gosu::Button::KbEscape => :cancel
+  }
+
+  def self.[](key)
+    @keys[key]
+  end
+end
+  
 
 class App < Gosu::Window
   def initialize
@@ -28,6 +42,8 @@ class App < Gosu::Window
     
     @fps = FpsCounter.new
     @last_time = Gosu::milliseconds
+
+    @events = Hash.new
     
     init_render
     init_viewports
@@ -58,21 +74,33 @@ class App < Gosu::Window
   end
 
   def init_entities
-    @vehicle = Vehicle.new(:mass => 0.2, :max_speed => 150)
+    @vehicle = Vehicle.new(:mass => 0.2, :max_speed => 50)
     @vehicle.pos.x = @viewports[:game].virtual_w/2
     @vehicle.pos.y = @viewports[:game].virtual_h/2
     
-    @v2 = Vehicle.new(:mass => 1, :max_speed => 50, :color => 0xffff0000)
+    @v2 = Vehicle.new(:mass => 1, :max_speed => 15, :color => 0xffff0000)
     @v2.pos.x = 0
     @v2.pos.y = 0
 
-    @v3 = Vehicle.new(:mass => 0.7, :max_speed => 100, :color => 0xff00ff00)
+    @v3 = Vehicle.new(:mass => 0.7, :max_speed => 30, :color => 0xff00ff00)
     @v3.pos.x = 200
     @v3.pos.y = 200
     
     @viewports[:game].add_entity(@vehicle)
     @viewports[:game].add_entity(@v2)
     @viewports[:game].add_entity(@v3)
+
+    register_listener(@viewports[:game], :l_click)
+    
+    @viewports[:game].on(:l_click) do
+      @vehicle.turn_on :arrive
+      @vehicle.target = Vector2d.new(@viewports[:game].to_viewport_x(mouse_x), @viewports[:game].to_viewport_y(mouse_y))
+      @v2.turn_on :pursuit
+      @v2.evader = @vehicle
+
+      @v3.turn_on :flee
+      @v3.target = Vector2d.new(@viewports[:game].to_viewport_x(mouse_x), @viewports[:game].to_viewport_y(mouse_y))
+    end
   end
 
   def init_pointer
@@ -107,15 +135,7 @@ class App < Gosu::Window
   end
 
   def button_down(id)
-    if id == Gosu::Button::MsLeft
-      @vehicle.turn_on :arrive
-      @vehicle.target = Vector2d.new(@viewports[:game].viewport_to_screen_x(mouse_x), @viewports[:game].viewport_to_screen_y(mouse_y))
-      @v2.turn_on :pursuit
-      @v2.evader = @vehicle
-
-      @v3.turn_on :flee
-      @v3.target = Vector2d.new(@viewports[:game].viewport_to_screen_x(mouse_x), @viewports[:game].viewport_to_screen_y(mouse_y))
-    end
+    on(Keys[id])
     
     if id == Gosu::Button::KbEscape
       close
@@ -123,6 +143,19 @@ class App < Gosu::Window
 
     if id == Gosu::Button::KbD
       Render.debug = !Render.debug
+    end
+  end
+
+  def register_listener(listener, event)
+    @events[event] ||= Set.new
+    @events[event] << listener
+  end
+
+  def on(event)
+    puts @events[event]
+    @events[event] && @events[event].each do |l|
+      puts event
+      l.ex(event)
     end
   end
 end

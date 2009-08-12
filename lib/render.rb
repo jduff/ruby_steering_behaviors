@@ -133,9 +133,9 @@ class Render
 
     def adjust_to_viewport(opts)
       if @viewport
-        opts[:x] = @viewport.screen_to_viewport_x(opts[:x])
-        opts[:y] = @viewport.screen_to_viewport_y(opts[:y])
-        opts[:factor] = @viewport.local_factor_x * opts[:factor]
+        opts[:x] = @viewport.to_screen_x(opts[:x])
+        opts[:y] = @viewport.to_screen_y(opts[:y])
+        opts[:factor] = @viewport.screen_factor_x * opts[:factor]
       end
     end
   end
