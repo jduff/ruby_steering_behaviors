@@ -7,8 +7,6 @@ begin
 rescue LoadError
 end
 
-require 'pp'
-
 require 'render'
 require 'fps'
 require 'steering_behaviors'
@@ -100,7 +98,7 @@ class Game < Gosu::Window
       v2.pos.x = 0
       v2.pos.y = 0
 
-      v3 = Vehicle.new(:mass => 0.7, :max_speed => 30, :color => 0xff00ff00)
+      v3 = Vehicle.new(:mass => 2+rand(4), :max_speed => 30+rand(200), :color => 0xff00ff00)
       v3.pos.x = 200
       v3.pos.y = 200
 
@@ -125,7 +123,7 @@ class Game < Gosu::Window
         v.entities[1].turn_on :pursuit
         v.entities[1].evader = v.entities[0]
         
-        v.entities[2].turn_on :flee
+        v.entities[2].turn_on :seek
         v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
       end
     end
@@ -163,8 +161,10 @@ class Game < Gosu::Window
 
   # Draw methods
   def draw
-    Render.add_list_item(@fps) if Game.debug
-    Render.list(:factor => 0.7)
+    Render.text_list do |l|
+      l.list_item(@fps) if Game.debug
+    end
+    
     draw_pointer
     @viewports.each do |v|
       v.draw

@@ -1,5 +1,6 @@
 class Render
   @viewport = nil
+  @row = 0
   
   class << self
     attr_accessor :viewport
@@ -24,7 +25,7 @@ class Render
       @graphics = graphics
     end
     
-    def add_list_item(text)
+    def list_item(text)
       @items ||= []
       @items << text
     end
@@ -33,18 +34,18 @@ class Render
       
       @window.
         draw_line(opts[:x], opts[:y], 0xffff0000,
-                  opts[:x]+opts[:w], opts[:y], 0xffff0000)
+                  opts[:x]+opts[:w], opts[:y], 0xffff0000, ZOrder::UI)
       @window.
         draw_line(opts[:x]+opts[:w], opts[:y], 0xffff0000,
-                  opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000)
+                  opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000, ZOrder::UI)
 
       @window.
         draw_line(opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000,
-                  opts[:x], opts[:y]+opts[:h], 0xffff0000)
+                  opts[:x], opts[:y]+opts[:h], 0xffff0000, ZOrder::UI)
 
       @window.
         draw_line(opts[:x], opts[:y]+opts[:h], 0xffff0000,
-                  opts[:x], opts[:y], 0xffff0000)
+                  opts[:x], opts[:y], 0xffff0000, ZOrder::UI)
     end
     
     def image(name, opts={})
@@ -98,7 +99,13 @@ class Render
                  opts[:color])
     end
 
-    def list(opts={})
+    def text_list(opts={})
+      @row = 0
+      yield self
+      render_list(opts)
+    end
+    
+    def render_list(opts={})
       default_opts = {
         :x => 0,
         :y => 0,

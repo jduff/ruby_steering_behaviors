@@ -1,10 +1,19 @@
 class SteeringBehaviors
-  attr_reader :behaviors, :predicted, :look_ahead_time
+  attr_reader :behaviors
+  
+  # For debugging
+  attr_reader :force, :predicted, :distance_to_target, :look_ahead_time
   
   def initialize(vehicle)
     @vehicle = vehicle
-    @steering = Vector2d.new
+    @force = Vector2d.new
     @behaviors = Hash.new
+
+    initialize_debug_vars
+  end
+
+  def initialize_debug_vars
+    @to_debug = Hash.new
   end
 
   def seek(target_pos)
@@ -24,13 +33,13 @@ class SteeringBehaviors
       :slow => 2
     }
     to_target = target_pos - @vehicle.pos
-    dist = to_target.length
+    @distance_to_target = to_target.length
 
-    if dist > 0
+    if @distance_to_target > 0
       deceleration_tweaker = 1.2
-      speed = dist / (deceleration_tweaker*dec_opts[deceleration])
+      speed = @distance_to_target / (deceleration_tweaker*dec_opts[deceleration])
       speed = [speed, @vehicle.max_speed].min
-      desired_velocity = to_target * speed / dist
+      desired_velocity = to_target * speed / @distance_to_target
       return desired_velocity - @vehicle.vel
     end
     return Vector2d.new(0,0)
@@ -38,38 +47,46 @@ class SteeringBehaviors
 
   def pursuit(evader)
     to_evader = evader.pos - @vehicle.pos
-    relative_heading = @vehicle.head.dot(evader.head)
+    relative_heading = @vehicle.heading.dot(evader.heading)
 
-    if to_evader.dot(@vehicle.head) > 0 && relative_heading < -0.95
+    if to_evader.dot(@vehicle.heading) > 0 && relative_heading < -0.95
+      @predicted = nil
+      @look_ahead_time = nil
       return seek(evader.pos)
     end
     
     @look_ahead_time = (to_evader / (@vehicle.max_speed + evader.vel.length)).length
     @predicted = evader.pos + evader.vel * @look_ahead_time
-    return seek(evader.pos + evader.vel * @look_ahead_time)
+    return seek(@predicted)
   end
 
   def calculate
-    @steering.zero!
+    @force.zero!
     if @behaviors[:seek]
-      @steering = seek(@vehicle.target) if @vehicle.target
+      @force = seek(@vehicle.target) if @vehicle.target
     end
 
     if @behaviors[:flee]
-      @steering = flee(@vehicle.target) if @vehicle.target
+      @force = flee(@vehicle.target) if @vehicle.target
     end
 
     if @behaviors[:arrive]
-      @steering = arrive(@vehicle.target, :fast) if @vehicle.target
+      @force = arrive(@vehicle.target, :fast) if @vehicle.target
     end
 
     if @behaviors[:pursuit]
-      @steering = pursuit(@vehicle.evader) if @vehicle.evader
+      @force = pursuit(@vehicle.evader) if @vehicle.evader
     end
-    @steering
+    
+    return @force
   end
 
-  def to_s
-    @steering.to_s
+  def debug(var, f_string, m_name = nil)
+    res = send(var)
+    if res && m_name
+      Render.list_item("#{format(f_string, send(var).send(m_name))}  @#{var} #{send(var)}")
+    elsif res
+      Render.list_item("@#{var} #{format(f_string, send(var))}")
+    end
   end
 end

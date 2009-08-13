@@ -26,8 +26,8 @@ class Viewport
   end
 
   def fire(event)
-    puts "Viewport: #{event}" if Game::debug
     if @events[event] && inside?(@window.mouse_x, @window.mouse_y)
+      puts "Viewport: #{event}" if Game::debug
       @events[event].call
     end
   end
@@ -53,9 +53,10 @@ class Viewport
       @entities.each do |e|
         e.draw
       end    
-      Render.borders(:x => @x, :y => @y, :w => @w, :h => @h)
     end
     Render.set_viewport(last_viewport)
+    
+    Render.borders(:x => @x, :y => @y, :w => @w, :h => @h)
   end
 
   # Screen coordinates to local viewport
