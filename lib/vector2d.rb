@@ -41,7 +41,11 @@ class Vector2d
   end
 
   def normalize
-    Vector2d.new(@x/length, @y/length)
+    if length != 0
+      Vector2d.new(@x/length, @y/length)
+    else
+      Vector2d.new(0,0)
+    end
   end
 
   def +(v)
@@ -70,10 +74,11 @@ class Vector2d
   end
   
   def truncate!(max)
-    return if length < max
+    return self if length < max
     normalize!
     self.x *= max
     self.y *= max
+    self
   end
 
   def dot(vector)

@@ -2,7 +2,7 @@
 class Vehicle
   attr_reader :pos, :vel, :heading,# :side,
   :mass, :max_speed#, :max_force, :max_turn_rate
-  attr_accessor :target, :evader
+  attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
     default_opts = {
@@ -14,8 +14,7 @@ class Vehicle
     
     @pos = Vector2d.new
     @accel = Vector2d.new
-    @target = nil
-    @evader = nil
+    @target = @evader = @pursuer = nil
     @vel = Vector2d.new
     @heading = Vector2d.new(0,-1)
     @mass = Float(opts[:mass])
@@ -49,12 +48,16 @@ class Vehicle
     debug if Game.debug
     Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
   end
+
+  def speed
+    @vel.length
+  end
   
   def debug
     Render.text_list(:x => @pos.x, :y => 50 + @pos.y, :height => 30) do
       Render.list_item "@pos #{@pos}"
       Render.list_item("#{format("%.2f", @heading.angle)}° @heading #{@heading}")
-      Render.list_item("#{format("%.2f", @vel.length)}u/s @vel #{@vel}")
+      Render.list_item("#{format("%.2f", @vel.length)}u/s @vel #{@vel}") if @vel
       Render.list_item("#{format("%.2f", @accel.length)}u/s^2 @accel #{@accel}")
       
       @steering.debug(:predicted, "%.2f", :length)

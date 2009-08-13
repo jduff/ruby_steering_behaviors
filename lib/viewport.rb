@@ -28,7 +28,7 @@ class Viewport
   def fire(event)
     if @events[event] && inside?(@window.mouse_x, @window.mouse_y)
       puts "Viewport: #{event}" if Game::debug
-      @events[event].call
+      @events[event].call(self)
     end
   end
 

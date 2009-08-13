@@ -90,13 +90,13 @@ class Game < Gosu::Window
 
   def init_entities
     @viewports.each do |v|
-      v1 = Vehicle.new(:mass => 0.2, :max_speed => 50 + rand(100))
+      v1 = Vehicle.new(:mass => 0.5, :max_speed => 50 + rand(100))
       v1.pos.x = v.virtual_w/2
       v1.pos.y = v.virtual_h/2
 
-      v2 = Vehicle.new(:mass => 1, :max_speed => 15 + rand(50), :color => 0xffff0000)
-      v2.pos.x = 0
-      v2.pos.y = 0
+      v2 = Vehicle.new(:mass => 1, :max_speed => 75 + rand(50), :color => 0xffff0000)
+      v2.pos.x = v.virtual_w/2 - 10
+      v2.pos.y = v.virtual_h/2 - 10
 
       v3 = Vehicle.new(:mass => 2+rand(4), :max_speed => 30+rand(200), :color => 0xff00ff00)
       v3.pos.x = 200
@@ -114,20 +114,7 @@ class Game < Gosu::Window
       register_listener(v, :zoom_in)
       register_listener(v, :zoom_out)
     end
-
-    @viewports.each do |v|
-      v.on(:l_click) do
-        v.entities[0].turn_on :arrive
-        v.entities[0].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
-
-        v.entities[1].turn_on :pursuit
-        v.entities[1].evader = v.entities[0]
-        
-        v.entities[2].turn_on :seek
-        v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
-      end
-    end
-
+    
     @viewports.each do |v|
       v.on(:zoom_in) do
         v.virtual_w /= 1.05
@@ -141,6 +128,29 @@ class Game < Gosu::Window
         v.virtual_h *= 1.05
       end
     end
+
+    @viewports[0].on(:l_click) do |v|
+      v.entities[0].turn_on :arrive
+      v.entities[0].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+      
+      v.entities[1].turn_on :pursuit
+      v.entities[1].evader = v.entities[0]
+      
+      v.entities[2].turn_on :seek
+      v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+    end
+    
+    @viewports[1].on(:l_click) do |v|
+      v.entities[0].turn_on :evade
+      v.entities[0].pursuer = v.entities[1]
+      
+      v.entities[1].turn_on :pursuit
+      v.entities[1].evader = v.entities[0]
+      
+      v.entities[2].turn_on :seek
+      v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+    end
+    
   end
   
   def init_pointer

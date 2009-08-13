@@ -47,17 +47,25 @@ class SteeringBehaviors
 
   def pursuit(evader)
     to_evader = evader.pos - @vehicle.pos
+    
     relative_heading = @vehicle.heading.dot(evader.heading)
-
     if to_evader.dot(@vehicle.heading) > 0 && relative_heading < -0.95
       @predicted = nil
       @look_ahead_time = nil
       return seek(evader.pos)
     end
     
-    @look_ahead_time = (to_evader / (@vehicle.max_speed + evader.vel.length)).length
+    @look_ahead_time = to_evader.length / (@vehicle.max_speed + evader.speed)
     @predicted = evader.pos + evader.vel * @look_ahead_time
     return seek(@predicted)
+  end
+
+  def evade(pursuer)
+    to_pursuer = pursuer.pos - @vehicle.pos
+    
+    @look_ahead_time = to_pursuer.length / (@vehicle.max_speed + pursuer.speed)
+    @predicted = pursuer.pos + pursuer.vel * @look_ahead_time 
+    return flee(@predicted)
   end
 
   def calculate
@@ -76,6 +84,10 @@ class SteeringBehaviors
 
     if @behaviors[:pursuit]
       @force = pursuit(@vehicle.evader) if @vehicle.evader
+    end
+
+    if @behaviors[:evade]
+      @force = evade(@vehicle.pursuer) if @vehicle.pursuer
     end
     
     return @force
