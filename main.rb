@@ -7,6 +7,8 @@ begin
 rescue LoadError
 end
 
+require 'pp'
+
 require 'render'
 require 'fps'
 require 'steering_behaviors'
@@ -75,15 +77,21 @@ class Game < Gosu::Window
 
   def init_viewports
     @viewports = Hash.new
-    @viewports[:game] = Viewport.new(:x => 100, :y => 100,
-                                     :w => @w/2, :h => @h/2,
-                                     :virtual_w => @w, :virtual_h => @h)
+    @viewports[0] = Viewport.new(:x => 5, :y => 10,
+                                 :w => 500, :h => 750,
+                                 :virtual_w => 500, :virtual_h => 750,
+                                 :window => self)
+    
+    @viewports[1] = Viewport.new(:x => 519, :y => 10,
+                                 :w => 500, :h => 750,
+                                 :virtual_w => 1000, :virtual_h => 1500,
+                                 :window => self)
   end
 
   def init_entities
     @vehicle = Vehicle.new(:mass => 0.2, :max_speed => 50)
-    @vehicle.pos.x = @viewports[:game].virtual_w/2
-    @vehicle.pos.y = @viewports[:game].virtual_h/2
+    @vehicle.pos.x = @viewports[1].virtual_w/2
+    @vehicle.pos.y = @viewports[1].virtual_h/2
     
     @v2 = Vehicle.new(:mass => 1, :max_speed => 15, :color => 0xffff0000)
     @v2.pos.x = 0
@@ -93,22 +101,22 @@ class Game < Gosu::Window
     @v3.pos.x = 200
     @v3.pos.y = 200
     
-    @viewports[:game].add_entity(@vehicle)
-    @viewports[:game].add_entity(@v2)
-    @viewports[:game].add_entity(@v3)
+    @viewports[1].add_entity(@vehicle)
+    @viewports[1].add_entity(@v2)
+    @viewports[1].add_entity(@v3)
   end
 
   def init_events
-    register_listener(@viewports[:game], :l_click)
+    register_listener(@viewports[1], :l_click)
     
-    @viewports[:game].on(:l_click) do
+    @viewports[1].on(:l_click) do
       @vehicle.turn_on :arrive
-      @vehicle.target = Vector2d.new(@viewports[:game].to_viewport_x(mouse_x), @viewports[:game].to_viewport_y(mouse_y))
+      @vehicle.target = Vector2d.new(@viewports[1].to_viewport_x(mouse_x), @viewports[1].to_viewport_y(mouse_y))
       @v2.turn_on :pursuit
       @v2.evader = @vehicle
 
       @v3.turn_on :flee
-      @v3.target = Vector2d.new(@viewports[:game].to_viewport_x(mouse_x), @viewports[:game].to_viewport_y(mouse_y))
+      @v3.target = Vector2d.new(@viewports[1].to_viewport_x(mouse_x), @viewports[1].to_viewport_y(mouse_y))
     end
   end
   
@@ -123,7 +131,9 @@ class Game < Gosu::Window
     @last_time = new_time
     
     @fps.update(elapsed_t)
-    @viewports[:game].update(elapsed_t)
+    @viewports.each_value do |v|
+      v.update(elapsed_t)
+    end
   end
 
   # Draw methods
@@ -131,11 +141,12 @@ class Game < Gosu::Window
     Render.add_list_item(@fps) if Render.debug
     Render.list(:factor => 0.7)
     draw_pointer
-    @viewports[:game].draw    
+    @viewports.each_value do |v|
+      v.draw
+    end
   end
 
   def draw_pointer
-    #Render.set_viewport(@viewports[:main])
     Render.image(:crosshair,
                  :x => mouse_x,
                  :y => mouse_y,
@@ -144,7 +155,7 @@ class Game < Gosu::Window
   end
 
   def button_down(id)
-    on(Keys[id])
+    fire(Keys[id])
     
     if id == Gosu::Button::KbEscape
       close
@@ -153,6 +164,11 @@ class Game < Gosu::Window
     if id == Gosu::Button::KbD
       Render.debug = !Render.debug
     end
+
+    if id == Gosu::Button::KbW
+      @viewports[1].virtual_w *= 1.1
+      @viewports[1].virtual_h *= 1.1
+    end
   end
 
   def register_listener(listener, event)
@@ -160,7 +176,7 @@ class Game < Gosu::Window
     @events[event] << listener
   end
 
-  def on(event)
+  def fire(event)
     @events[event] && @events[event].each do |l|
       l.fire(event)
     end

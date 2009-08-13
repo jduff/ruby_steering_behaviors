@@ -1,10 +1,11 @@
 class Viewport
-  attr_reader :x, :y, :w, :h, :virtual_w, :virtual_h
+  attr_accessor :x, :y, :w, :h, :virtual_w, :virtual_h
   
   def initialize(opts={})
     default_opts = {
       :x => 0, :y => 0,
-      :virtual_w => opts[:w], :virtual_h => opts[:h]
+      :virtual_w => opts[:w], :virtual_h => opts[:h],
+      :window => opts[:window]
     }
     opts = default_opts.merge!(opts)
     
@@ -14,21 +15,27 @@ class Viewport
     @h = Float(opts[:h])
     @virtual_w = Float(opts[:virtual_w])
     @virtual_h = Float(opts[:virtual_h])
+    @window = opts[:window]
+
+    @entities = Array.new
+    @events = Hash.new
   end
 
   def add_entity(entity)
-    @entities ||= []
     @entities << entity
   end
 
   def on(event, &block)
-    @events ||= Hash.new
     @events[event] = block
   end
 
   def fire(event)
     puts "Viewport: #{event}" if Game::debug
-    @events[event].call
+    @events[event].call if inside?(@window.mouse_x, @window.mouse_y)
+  end
+
+  def inside?(x,y)
+    x >= @x && x < (@x + @w) && y >= @y && y < (@y + @h)
   end
   
   def update(elapsed_t)
