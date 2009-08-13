@@ -45,7 +45,7 @@ class Vehicle
   def draw
     Render.image(:starfighter, :x => @pos.x, :y => @pos.y, :angle => @head.angle, :color => @color)
     Render.image(:crosshair, :x => @target.x, :y => @target.y, :color => 0xff00ff00, :factor => 0.5, :z_order => ZOrder::UI) if @target
-    debug if Render.debug
+    debug if Game.debug
     Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
   end
   

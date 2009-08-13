@@ -1,5 +1,5 @@
 class Viewport
-  attr_accessor :x, :y, :w, :h, :virtual_w, :virtual_h
+  attr_accessor :x, :y, :w, :h, :virtual_w, :virtual_h, :entities
   
   def initialize(opts={})
     default_opts = {
@@ -21,17 +21,15 @@ class Viewport
     @events = Hash.new
   end
 
-  def add_entity(entity)
-    @entities << entity
-  end
-
   def on(event, &block)
     @events[event] = block
   end
 
   def fire(event)
     puts "Viewport: #{event}" if Game::debug
-    @events[event].call if inside?(@window.mouse_x, @window.mouse_y)
+    if @events[event] && inside?(@window.mouse_x, @window.mouse_y)
+      @events[event].call
+    end
   end
 
   def inside?(x,y)

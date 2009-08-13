@@ -26,7 +26,11 @@ module Keys
   @keys = {
     Gosu::Button::KbLeft => :left,
     Gosu::Button::MsLeft => :l_click,
-    Gosu::Button::KbEscape => :cancel
+    Gosu::Button::KbEscape => :cancel,
+    Gosu::Button::KbUp => :zoom_in,
+    Gosu::Button::KbDown => :zoom_out,
+    Gosu::Button::MsWheelUp => :zoom_in,
+    Gosu::Button::MsWheelDown => :zoom_out
   }
 
   def self.[](key)
@@ -39,7 +43,7 @@ class Game < Gosu::Window
   @debug = true
 
   class << self
-    attr_reader :debug
+    attr_accessor :debug
   end
   
   def initialize
@@ -71,52 +75,73 @@ class Game < Gosu::Window
     @graphics[:crosshair] = Gosu::Image.new(self, 'media/crosshair.png',true)
     @graphics[:starfighter] = Gosu::Image.new(self, 'media/Starfighter.bmp',true)
     Render.set_graphics(@graphics)
-    
-    Render.debug = true
   end
 
   def init_viewports
-    @viewports = Hash.new
-    @viewports[0] = Viewport.new(:x => 5, :y => 10,
+    @viewports = Array.new
+    @viewports << Viewport.new(:x => 5, :y => 10,
                                  :w => 500, :h => 750,
                                  :virtual_w => 500, :virtual_h => 750,
                                  :window => self)
     
-    @viewports[1] = Viewport.new(:x => 519, :y => 10,
+    @viewports << Viewport.new(:x => 519, :y => 10,
                                  :w => 500, :h => 750,
                                  :virtual_w => 1000, :virtual_h => 1500,
                                  :window => self)
   end
 
   def init_entities
-    @vehicle = Vehicle.new(:mass => 0.2, :max_speed => 50)
-    @vehicle.pos.x = @viewports[1].virtual_w/2
-    @vehicle.pos.y = @viewports[1].virtual_h/2
-    
-    @v2 = Vehicle.new(:mass => 1, :max_speed => 15, :color => 0xffff0000)
-    @v2.pos.x = 0
-    @v2.pos.y = 0
+    @viewports.each do |v|
+      v1 = Vehicle.new(:mass => 0.2, :max_speed => 50 + rand(100))
+      v1.pos.x = v.virtual_w/2
+      v1.pos.y = v.virtual_h/2
 
-    @v3 = Vehicle.new(:mass => 0.7, :max_speed => 30, :color => 0xff00ff00)
-    @v3.pos.x = 200
-    @v3.pos.y = 200
-    
-    @viewports[1].add_entity(@vehicle)
-    @viewports[1].add_entity(@v2)
-    @viewports[1].add_entity(@v3)
+      v2 = Vehicle.new(:mass => 1, :max_speed => 15 + rand(50), :color => 0xffff0000)
+      v2.pos.x = 0
+      v2.pos.y = 0
+
+      v3 = Vehicle.new(:mass => 0.7, :max_speed => 30, :color => 0xff00ff00)
+      v3.pos.x = 200
+      v3.pos.y = 200
+
+      v.entities << v1
+      v.entities << v2
+      v.entities << v3
+    end
   end
 
   def init_events
-    register_listener(@viewports[1], :l_click)
-    
-    @viewports[1].on(:l_click) do
-      @vehicle.turn_on :arrive
-      @vehicle.target = Vector2d.new(@viewports[1].to_viewport_x(mouse_x), @viewports[1].to_viewport_y(mouse_y))
-      @v2.turn_on :pursuit
-      @v2.evader = @vehicle
+    @viewports.each do |v|
+      register_listener(v, :l_click)
+      register_listener(v, :zoom_in)
+      register_listener(v, :zoom_out)
+    end
 
-      @v3.turn_on :flee
-      @v3.target = Vector2d.new(@viewports[1].to_viewport_x(mouse_x), @viewports[1].to_viewport_y(mouse_y))
+    @viewports.each do |v|
+      v.on(:l_click) do
+        v.entities[0].turn_on :arrive
+        v.entities[0].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+
+        v.entities[1].turn_on :pursuit
+        v.entities[1].evader = v.entities[0]
+        
+        v.entities[2].turn_on :flee
+        v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+      end
+    end
+
+    @viewports.each do |v|
+      v.on(:zoom_in) do
+        v.virtual_w /= 1.05
+        v.virtual_h /= 1.05
+      end
+    end
+
+    @viewports.each do |v|
+      v.on(:zoom_out) do
+        v.virtual_w *= 1.05
+        v.virtual_h *= 1.05
+      end
     end
   end
   
@@ -131,17 +156,17 @@ class Game < Gosu::Window
     @last_time = new_time
     
     @fps.update(elapsed_t)
-    @viewports.each_value do |v|
+    @viewports.each do |v|
       v.update(elapsed_t)
     end
   end
 
   # Draw methods
   def draw
-    Render.add_list_item(@fps) if Render.debug
+    Render.add_list_item(@fps) if Game.debug
     Render.list(:factor => 0.7)
     draw_pointer
-    @viewports.each_value do |v|
+    @viewports.each do |v|
       v.draw
     end
   end
@@ -162,12 +187,7 @@ class Game < Gosu::Window
     end
 
     if id == Gosu::Button::KbD
-      Render.debug = !Render.debug
-    end
-
-    if id == Gosu::Button::KbW
-      @viewports[1].virtual_w *= 1.1
-      @viewports[1].virtual_h *= 1.1
+      Game.debug = !Game.debug
     end
   end
 

@@ -2,7 +2,7 @@ class Render
   @viewport = nil
   
   class << self
-    attr_accessor :debug, :viewport
+    attr_accessor :viewport
 
     def set_window(window)
       @window = window
