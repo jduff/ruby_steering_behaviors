@@ -117,11 +117,11 @@ class Vector2d
   def self.point_to_world(point, heading, side, pos)
     local_angle = heading.radians + point.radians
     
-    #x = -Math.sin(local_angle) * point.length
-    #y = Math.cos(local_angle) * point.length
+    x = -Math.sin(local_angle) * point.length
+    y = Math.cos(local_angle) * point.length
 
-    x = point.x * Math.cos(local_angle) + point.y * Math.sin(local_angle)
-    y = -point.x * Math.sin(local_angle) + point.y * Math.cos(local_angle)
+    #x = point.x * Math.cos(local_angle) + point.y * Math.sin(local_angle)
+    #y = -point.x * Math.sin(local_angle) + point.y * Math.cos(local_angle)
 
     world_point = Vector2d.new(x,y) + pos
     return world_point

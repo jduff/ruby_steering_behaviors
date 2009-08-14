@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 class Vehicle
   attr_reader :pos, :vel, :heading,# :side,
-  :mass, :max_speed#, :max_force, :max_turn_rate
+  :mass, :max_speed, :elapsed_time#, :max_force, :max_turn_rate
   attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
@@ -47,8 +47,10 @@ class Vehicle
     Render.image(:crosshair, :x => @target.x, :y => @target.y, :color => 0xff00ff00, :factor => 0.5, :z_order => ZOrder::UI) if @target
     debug if Game.debug
     Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
-    Render.image(:crosshair, :x => @steering.wander_target.x, :y => @steering.wander_target.y, :factor => 0.5, :color => 0xff0000ff) if @steering.wander_target
-    Render.circle(@steering.wander_center.x, @steering.wander_center.y, 150) if @steering.wander_center
+    to_world = Vector2d.point_to_world(@steering.wander_target, @heading, side, @pos) if @steering.wander_target
+    Render.image(:crosshair, :x => to_world.x, :y => to_world.y, :factor => 0.5, :color => 0xff0000ff) if to_world
+    
+    Render.circle(@steering.wander_center.x, @steering.wander_center.y, @steering.wander_radius) if @steering.wander_center
   end
 
   def speed
@@ -69,6 +71,7 @@ class Vehicle
       @steering.debug(:predicted, "%.2f", :length)
       @steering.debug(:distance_to_target, "%.2f")
       @steering.debug(:look_ahead_time, "%.2f")
+      @steering.debug(:wander_angle, "%.2f")
     end
   end
 end

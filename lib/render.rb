@@ -154,7 +154,7 @@ class Render
       error = -r
       x = r
       y = 0
-      while x >= y
+      while x/4 >= y
         plot8points(cx, cy, x, y)
         error += y
         y += 1
@@ -188,7 +188,7 @@ class Render
     end
 
     def set_pixel(x,y)
-      image(:crosshair, :x => x, :y => y, :factor => 0.01)
+      image(:crosshair, :x => x, :y => y, :factor => 0.1)
     end
     
   end
