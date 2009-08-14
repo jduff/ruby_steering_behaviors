@@ -2,18 +2,13 @@ class SteeringBehaviors
   attr_reader :behaviors
   
   # For debugging
-  attr_reader :force, :predicted, :distance_to_target, :look_ahead_time
+  attr_reader :force, :predicted, :distance_to_target, :look_ahead_time, :wander_target, :wander_center, :wander_radius
   
   def initialize(vehicle)
     @vehicle = vehicle
+    @wander_target = Vector2d.new(@vehicle.pos.x, @vehicle.pos.y)
     @force = Vector2d.new
     @behaviors = Hash.new
-
-    initialize_debug_vars
-  end
-
-  def initialize_debug_vars
-    @to_debug = Hash.new
   end
 
   def seek(target_pos)
@@ -68,6 +63,29 @@ class SteeringBehaviors
     return flee(@predicted)
   end
 
+  def wander
+    @wander_radius = 150.0
+    wander_distance = 100.0
+    wander_jitter = 30
+
+    @wander_target += Vector2d.new(clamped_rand * wander_jitter, clamped_rand * wander_jitter)
+    @wander_target.normalize!
+    @wander_target *= wander_radius
+    target_local = @wander_target + Vector2d.new(0, wander_distance)
+    target_world = Vector2d.point_to_world(target_local, @vehicle.heading, @vehicle.side, @vehicle.pos)
+    @wander_target = target_world
+
+    circle_center = @vehicle.pos + Vector2d.new(0, wander_distance)
+    @wander_center = circle_center#Vector2d.point_to_world(circle_center, @vehicle.heading, @vehicle.side, @vehicle.pos)
+    
+    return @wander_target - @vehicle.pos
+  end
+
+  def clamped_rand
+    2 * rand - 1
+  end
+    
+
   def calculate
     @force.zero!
     if @behaviors[:seek]
@@ -88,6 +106,10 @@ class SteeringBehaviors
 
     if @behaviors[:evade]
       @force = evade(@vehicle.pursuer) if @vehicle.pursuer
+    end
+
+    if @behaviors[:wander]
+      @force = wander
     end
     
     return @force

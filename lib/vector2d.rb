@@ -65,6 +65,13 @@ class Vector2d
   end
 
   def normalize!
+    if length == 0
+      @x = 0
+      @y = 0
+      clear_memo
+      @normalized = true
+    end
+      
     return self if @normalized
     @x /= length
     @y /= length
@@ -86,7 +93,7 @@ class Vector2d
   end
 
   def perp
-    Vector2d.new(-@y, @x)
+    Vector2d.new(@y, -@x)
   end
 
   def angle
@@ -96,6 +103,36 @@ class Vector2d
     end
     
     return theta
+  end
+
+  def radians
+    theta = Math.acos(-@y/length)
+    if @x < 0
+      return theta * -1
+    end
+    
+    return theta
+  end
+
+  def self.point_to_world(point, heading, side, pos)
+    local_angle = heading.radians + point.radians
+    
+    #x = -Math.sin(local_angle) * point.length
+    #y = Math.cos(local_angle) * point.length
+
+    x = point.x * Math.cos(local_angle) + point.y * Math.sin(local_angle)
+    y = -point.x * Math.sin(local_angle) + point.y * Math.cos(local_angle)
+
+    world_point = Vector2d.new(x,y) + pos
+    return world_point
+  end
+
+  def self.debug(vars)
+    cadena = ""
+    vars.each_pair do |k,v|
+      cadena << "#{k}(#{v}) "
+    end
+    puts cadena
   end
 
   def to_s

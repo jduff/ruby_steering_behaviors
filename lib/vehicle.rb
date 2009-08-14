@@ -47,10 +47,16 @@ class Vehicle
     Render.image(:crosshair, :x => @target.x, :y => @target.y, :color => 0xff00ff00, :factor => 0.5, :z_order => ZOrder::UI) if @target
     debug if Game.debug
     Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
+    Render.image(:crosshair, :x => @steering.wander_target.x, :y => @steering.wander_target.y, :factor => 0.5, :color => 0xff0000ff) if @steering.wander_target
+    Render.circle(@steering.wander_center.x, @steering.wander_center.y, 150) if @steering.wander_center
   end
 
   def speed
     @vel.length
+  end
+
+  def side
+    @heading.perp
   end
   
   def debug

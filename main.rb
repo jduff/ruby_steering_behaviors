@@ -79,7 +79,7 @@ class Game < Gosu::Window
     @viewports = Array.new
     @viewports << Viewport.new(:x => 5, :y => 10,
                                  :w => 500, :h => 750,
-                                 :virtual_w => 500, :virtual_h => 750,
+                                 :virtual_w => 5000, :virtual_h => 7500,
                                  :window => self)
     
     @viewports << Viewport.new(:x => 519, :y => 10,
@@ -99,12 +99,17 @@ class Game < Gosu::Window
       v2.pos.y = v.virtual_h/2 - 10
 
       v3 = Vehicle.new(:mass => 2+rand(4), :max_speed => 30+rand(200), :color => 0xff00ff00)
-      v3.pos.x = 200
-      v3.pos.y = 200
+      v3.pos.x = v.virtual_w/2 + 10
+      v3.pos.y = v.virtual_h/2 + 10
+
+      v4 = Vehicle.new(:mass => 2, :max_speed => 130+rand(200), :color => 0xff0cffc0)
+      v4.pos.x = 100
+      v4.pos.y = 100
 
       v.entities << v1
       v.entities << v2
       v.entities << v3
+      v.entities << v4
     end
   end
 
@@ -138,6 +143,8 @@ class Game < Gosu::Window
       
       v.entities[2].turn_on :seek
       v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+
+      v.entities[3].turn_on :wander
     end
     
     @viewports[1].on(:l_click) do |v|
@@ -149,6 +156,8 @@ class Game < Gosu::Window
       
       v.entities[2].turn_on :seek
       v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
+
+      v.entities[3].turn_on :wander
     end
     
   end
