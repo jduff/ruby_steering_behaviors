@@ -47,8 +47,8 @@ class Vehicle
     Render.image(:crosshair, :x => @target.x, :y => @target.y, :color => 0xff00ff00, :factor => 0.5, :z_order => ZOrder::UI) if @target
     debug if Game.debug
     Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
-    to_world = Vector2d.point_to_world(@steering.wander_target, @heading, side, @pos) if @steering.wander_target
-    Render.image(:crosshair, :x => to_world.x, :y => to_world.y, :factor => 0.5, :color => 0xff0000ff) if to_world
+    to_world = @steering.target_world#Vector2d.point_to_world(@steering.wander_target, @heading, side, @pos) if @steering.wander_target
+    Render.image(:crosshair, :x => to_world.x, :y => to_world.y, :factor => 0.5, :color => 0xff0000ff, :z_order => ZOrder::UI) if to_world
     
     Render.circle(@steering.wander_center.x, @steering.wander_center.y, @steering.wander_radius) if @steering.wander_center
   end

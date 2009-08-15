@@ -3,11 +3,11 @@ class SteeringBehaviors
   
   # For debugging
   attr_reader :force, :predicted, :distance_to_target, :look_ahead_time,
-  :wander_target, :wander_center, :wander_radius, :wander_angle
+  :wander_target, :wander_center, :wander_radius, :wander_angle, :wander_distance, :target_world
   
   def initialize(vehicle)
     @vehicle = vehicle
-    #@wander_target = Vector2d.new(@vehicle.pos.x, @vehicle.pos.y)
+    @wander_target = Vector2d.new
     @force = Vector2d.new
     @behaviors = Hash.new
   end
@@ -65,18 +65,16 @@ class SteeringBehaviors
   end
 
   def wander
-    @wander_target ||= Vector2d.new(0,-1)
-    @wander_radius = 60.0
-    wander_distance = 200.0
-    wander_jitter = 0.0001
+    @wander_radius = 50
+    @wander_distance = 240.0
+    wander_jitter = 10
 
     @wander_target += Vector2d.new(clamped_rand * wander_jitter, clamped_rand * wander_jitter)
     @wander_target.normalize!
     @wander_angle = @wander_target.angle
     @wander_target *= wander_radius
     target_local = @wander_target + Vector2d.new(0, wander_distance)
-    @wander_target += Vector2d.new(0, wander_distance)
-    target_world = Vector2d.point_to_world(target_local, @vehicle.heading, @vehicle.side, @vehicle.pos)
+    @target_world = Vector2d.point_to_world(target_local, @vehicle.heading, @vehicle.side, @vehicle.pos)
 
     circle_center = Vector2d.new(0, wander_distance)
     @wander_center = Vector2d.point_to_world(circle_center, @vehicle.heading, @vehicle.side, @vehicle.pos)

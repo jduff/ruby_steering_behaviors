@@ -17,7 +17,7 @@ require 'viewport'
 require 'set'
 
 module ZOrder
-  Viewport, Entity, UI, Pointer, Debug = *0..4
+  Viewport, Background, Entity, UI, Pointer, Debug = *0..5
 end
 
 module Keys
@@ -72,6 +72,7 @@ class Game < Gosu::Window
     @graphics = Hash.new
     @graphics[:crosshair] = Gosu::Image.new(self, 'media/crosshair.png',true)
     @graphics[:starfighter] = Gosu::Image.new(self, 'media/Starfighter.bmp',true)
+    @graphics[:circle] = Gosu::Image.new(self, 'media/circle.png',true)
     Render.set_graphics(@graphics)
   end
 
@@ -79,7 +80,7 @@ class Game < Gosu::Window
     @viewports = Array.new
     @viewports << Viewport.new(:x => 5, :y => 10,
                                  :w => 500, :h => 750,
-                                 :virtual_w => 5000, :virtual_h => 7500,
+                                 :virtual_w => 1000, :virtual_h => 1500,
                                  :window => self)
     
     @viewports << Viewport.new(:x => 519, :y => 10,
@@ -90,11 +91,11 @@ class Game < Gosu::Window
 
   def init_entities
     @viewports.each do |v|
-      v1 = Vehicle.new(:mass => 0.5, :max_speed => 50 + rand(100))
+      v1 = Vehicle.new(:mass => 2.5, :max_speed => 250 + rand(100))
       v1.pos.x = v.virtual_w/2
       v1.pos.y = v.virtual_h/2
 
-      v2 = Vehicle.new(:mass => 1, :max_speed => 75 + rand(50), :color => 0xffff0000)
+      v2 = Vehicle.new(:mass => 3, :max_speed => 275 + rand(150), :color => 0xffff0000)
       v2.pos.x = v.virtual_w/2 - 10
       v2.pos.y = v.virtual_h/2 - 10
 
@@ -102,9 +103,9 @@ class Game < Gosu::Window
       v3.pos.x = v.virtual_w/2 + 10
       v3.pos.y = v.virtual_h/2 + 10
 
-      v4 = Vehicle.new(:mass => 2, :max_speed => 130+rand(200), :color => 0xff0cffc0)
-      v4.pos.x = 100
-      v4.pos.y = 100
+      v4 = Vehicle.new(:mass => 0.2, :max_speed => 230, :color => 0xff0cffc0)
+      v4.pos.x = v.virtual_w/2 + 10
+      v4.pos.y = v.virtual_h/2 + 10
 
       v.entities << v1
       v.entities << v2
@@ -139,7 +140,7 @@ class Game < Gosu::Window
       v.entities[0].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
       
       v.entities[1].turn_on :pursuit
-      v.entities[1].evader = v.entities[0]
+      v.entities[1].evader = v.entities[3]
       
       v.entities[2].turn_on :seek
       v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
@@ -148,11 +149,11 @@ class Game < Gosu::Window
     end
     
     @viewports[1].on(:l_click) do |v|
-      v.entities[0].turn_on :evade
-      v.entities[0].pursuer = v.entities[1]
+      v.entities[0].turn_on :pursuit
+      v.entities[0].evader = v.entities[3]
       
       v.entities[1].turn_on :pursuit
-      v.entities[1].evader = v.entities[0]
+      v.entities[1].evader = v.entities[3]
       
       v.entities[2].turn_on :seek
       v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))

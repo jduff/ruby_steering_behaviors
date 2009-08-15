@@ -151,44 +151,7 @@ class Render
     end
 
     def circle(cx, cy, r)
-      error = -r
-      x = r
-      y = 0
-      while x/4 >= y
-        plot8points(cx, cy, x, y)
-        error += y
-        y += 1
-        error += y
-        if error >= 0
-          x -= 1
-          error -= x
-          error -= x
-        end
-      end
-    end
-
-    def plot8points(cx, cy, x, y)
-      plot4points(cx, cy, x, y)
-      if x != y
-        plot4points(cx, cy, y, x)
-      end
-    end
-
-    def plot4points(cx, cy, x, y)
-      set_pixel(cx+x, cy+y)
-      if x != 0
-        set_pixel(cx-x, cy+y)
-      end
-      if y != 0
-        set_pixel(cx+x, cy-y)
-      end
-      if x != 0 && y != 0
-        set_pixel(cx-x, cy-y)
-      end
-    end
-
-    def set_pixel(x,y)
-      image(:crosshair, :x => x, :y => y, :factor => 0.1)
+      image(:circle, :x => cx, :y => cy, :factor => r*2/100.0, :color => 0xffffffff)
     end
     
   end
