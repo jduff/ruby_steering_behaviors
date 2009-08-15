@@ -9,43 +9,31 @@ class Render
       @window = window
     end
 
-    def clip_to(x, y, w, h, &block)
-      @window.clip_to(x.to_i, y.to_i, w.to_i, h.to_i, &block)
-    end
-
     def set_viewport(viewport)
       @viewport = viewport
     end
 
-    def set_font(font)
-      @font = font
-    end
-
-    def set_graphics(graphics)
-      @graphics = graphics
-    end
-    
     def list_item(text)
       @items ||= []
       @items << text
     end
 
-    def borders(opts={})
-      
-      @window.
-        draw_line(opts[:x], opts[:y], 0xffff0000,
-                  opts[:x]+opts[:w], opts[:y], 0xffff0000, ZOrder::UI)
-      @window.
-        draw_line(opts[:x]+opts[:w], opts[:y], 0xffff0000,
-                  opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000, ZOrder::UI)
+    def load_images(images)
+      @images ||= {}
+      images.each_pair do |k,v|
+        @images[k] = Gosu::Image.new(@window, v,true)
+      end
+    end
 
-      @window.
-        draw_line(opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000,
-                  opts[:x], opts[:y]+opts[:h], 0xffff0000, ZOrder::UI)
+    def load_fonts(fonts)
+      @fonts ||= {}
+      fonts.each_pair do |k,v|
+        @fonts[k] = Gosu::Font.new(@window, v[:name], v[:size])
+      end
+    end
 
-      @window.
-        draw_line(opts[:x], opts[:y]+opts[:h], 0xffff0000,
-                  opts[:x], opts[:y], 0xffff0000, ZOrder::UI)
+    def clip_to(x, y, w, h, &block)
+      @window.clip_to(x.to_i, y.to_i, w.to_i, h.to_i, &block)
     end
     
     def image(name, opts={})
@@ -57,18 +45,18 @@ class Render
         :align_y => :middle,
         :color => 0xffffffff,
         :factor => 1,
-        :z_order => ZOrder::Entity
+        :z_order => :entity
       }
       opts = default_opts.merge!(opts)
       adjust_to_viewport(opts)
       
-      @graphics[name].
+      @images[name].
         draw_rot(opts[:x],
                  opts[:y],
-                 opts[:z_order],
+                 z_order(opts[:z_order]),
                  opts[:angle],
-                 get_alignment(opts[:align_x]),
-                 get_alignment(opts[:align_y]),
+                 alignment(opts[:align_x]),
+                 alignment(opts[:align_y]),
                  opts[:factor],
                  opts[:factor],
                  opts[:color])
@@ -80,20 +68,21 @@ class Render
         :y => 0,
         :align_x => :center,
         :align_y => :top,
-        :color => 0xffeeeeee,
+        :color => 0xffffffff,
         :factor => 1,
-        :z_order => ZOrder::UI
+        :z_order => :ui,
+        :font => :default
       }
       opts = default_opts.merge!(opts)
       #adjust_to_viewport(opts)
       
-      @font.
+      @fonts[opts[:font]].
         draw_rel(text,
                  opts[:x],
                  opts[:y],
-                 opts[:z_order],
-                 get_alignment(opts[:align_x]),
-                 get_alignment(opts[:align_y]),
+                 z_order(opts[:z_order]),
+                 alignment(opts[:align_x]),
+                 alignment(opts[:align_y]),
                  opts[:factor],
                  opts[:factor],
                  opts[:color])
@@ -124,22 +113,29 @@ class Render
       end
       @items = []
     end
-    
-    def get_alignment(type)
-      case type
-      when :left
-        0
-      when :top
-        0
-      when :center
-        0.5
-      when :middle
-        0.5
-      when :right
-        1
-      when :bottom
-        1
-      end
+
+    def circle(cx, cy, r)
+      image(:circle,
+            :x => cx, :y => cy,
+            :factor => r*2/100.0,
+            :color => 0xffffffff)
+    end
+
+    def borders(opts={})
+      @window.
+        draw_line(opts[:x], opts[:y], 0xffff0000,
+                  opts[:x]+opts[:w], opts[:y], 0xffff0000, z_order(:ui))
+      @window.
+        draw_line(opts[:x]+opts[:w], opts[:y], 0xffff0000,
+                  opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000, z_order(:ui))
+
+      @window.
+        draw_line(opts[:x]+opts[:w], opts[:y]+opts[:h], 0xffff0000,
+                  opts[:x], opts[:y]+opts[:h], 0xffff0000, z_order(:ui))
+
+      @window.
+        draw_line(opts[:x], opts[:y]+opts[:h], 0xffff0000,
+                  opts[:x], opts[:y], 0xffff0000, z_order(:ui))
     end
 
     def adjust_to_viewport(opts)
@@ -150,10 +146,30 @@ class Render
       end
     end
 
-    def circle(cx, cy, r)
-      image(:circle, :x => cx, :y => cy, :factor => r*2/100.0, :color => 0xffffffff)
+    private
+    def alignment(alignment)
+      @alignments ||= {
+        :left => 0,
+        :top => 0,
+        :center => 0.5,
+        :middle => 0.5,
+        :right => 1,
+        :bottom => 1
+      }
+      @alignments[alignment]
     end
-    
+
+    def z_order(order)
+      @orders ||= {
+        :viewport => 0,
+        :background => 1,
+        :entity => 2,
+        :ui => 3,
+        :pointer => 4,
+        :debug => 5
+      }
+      @orders[order]
+    end
   end
 end
 

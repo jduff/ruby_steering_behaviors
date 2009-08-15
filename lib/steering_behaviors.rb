@@ -7,7 +7,7 @@ class SteeringBehaviors
   
   def initialize(vehicle)
     @vehicle = vehicle
-    @wander_target = Vector2d.new
+    @wander_target = Vector2d.new(clamped_rand, clamped_rand)
     @force = Vector2d.new
     @behaviors = Hash.new
   end

@@ -16,10 +16,6 @@ require 'gosu'
 require 'viewport'
 require 'set'
 
-module ZOrder
-  Viewport, Background, Entity, UI, Pointer, Debug = *0..5
-end
-
 module Keys
   include Gosu::Button
   @keys = {
@@ -66,29 +62,32 @@ class Game < Gosu::Window
   # Init methods
   def init_render
     Render.set_window(self)
-    
-    @font = Gosu::Font.new(self, Gosu::default_font_name, 30)
-    Render.set_font(@font)
 
-    @graphics = Hash.new
-    @graphics[:crosshair] = Gosu::Image.new(self, 'media/crosshair.png',true)
-    @graphics[:starfighter] = Gosu::Image.new(self, 'media/Starfighter.bmp',true)
-    @graphics[:circle] = Gosu::Image.new(self, 'media/circle.png',true)
-    Render.set_graphics(@graphics)
+    images = {
+      :crosshair => 'media/crosshair.png',
+      :starfighter => 'media/Starfighter.bmp',
+      :circle => 'media/circle.png'
+    }
+    Render.load_images(images)
+
+    fonts = {
+      :default => {:name => Gosu::default_font_name, :size => 30}
+    }
+    Render.load_fonts(fonts)
   end
 
   def init_viewports
     @viewports = Array.new
     @viewports << Viewport.new(:x => 5, :y => 10,
-                                 :w => 500, :h => 750,
-                                 :virtual_w => 1000, :virtual_h => 1500,
+                               :w => 500, :h => 750,
+                               :virtual_w => 1000, :virtual_h => 1500,
                                :window => self)
     
     
     @viewports << Viewport.new(:x => 519, :y => 10,
-                                 :w => 500, :h => 750,
-                                 :virtual_w => 1000, :virtual_h => 1500,
-                                 :window => self)
+                               :w => 500, :h => 750,
+                               :virtual_w => 1000, :virtual_h => 1500,
+                               :window => self)
   end
 
   def init_entities
@@ -198,7 +197,7 @@ class Game < Gosu::Window
                  :x => mouse_x,
                  :y => mouse_y,
                  :color => 0xffff0000,
-                 :z_order => ZOrder::Pointer)
+                 :z_order => :pointer)
   end
 
   def button_down(id)
