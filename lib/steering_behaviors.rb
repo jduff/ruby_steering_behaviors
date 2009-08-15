@@ -2,8 +2,10 @@ class SteeringBehaviors
   attr_reader :behaviors
   
   # For debugging
-  attr_reader :force, :predicted, :distance_to_target, :look_ahead_time,
-  :wander_target, :wander_center, :wander_radius, :wander_angle, :wander_distance, :target_world
+  attr_reader :force, :predicted_pursuit, :predicted_evade,
+  :distance_to_target, :look_ahead_time, :wander_target,
+  :wander_center, :wander_radius, :wander_angle,
+  :wander_distance, :target_world
   
   def initialize(vehicle)
     @vehicle = vehicle
@@ -46,22 +48,22 @@ class SteeringBehaviors
     
     relative_heading = @vehicle.heading.dot(evader.heading)
     if to_evader.dot(@vehicle.heading) > 0 && relative_heading < -0.95
-      @predicted = nil
+      @predicted_pursuit = nil
       @look_ahead_time = nil
       return seek(evader.pos)
     end
     
     @look_ahead_time = to_evader.length / (@vehicle.max_speed + evader.speed)
-    @predicted = evader.pos + evader.vel * @look_ahead_time
-    return seek(@predicted)
+    @predicted_pursuit = evader.pos + evader.vel * @look_ahead_time
+    return seek(@predicted_pursuit)
   end
 
   def evade(pursuer)
     to_pursuer = pursuer.pos - @vehicle.pos
     
     @look_ahead_time = to_pursuer.length / (@vehicle.max_speed + pursuer.speed)
-    @predicted = pursuer.pos + pursuer.vel * @look_ahead_time 
-    return flee(@predicted)
+    @predicted_evade = pursuer.pos + pursuer.vel * @look_ahead_time 
+    return flee(@predicted_evade)
   end
 
   def wander
@@ -90,27 +92,27 @@ class SteeringBehaviors
   def calculate
     @force.zero!
     if @behaviors[:seek]
-      @force = seek(@vehicle.target) if @vehicle.target
+      @force += seek(@vehicle.target) if @vehicle.target
     end
 
     if @behaviors[:flee]
-      @force = flee(@vehicle.target) if @vehicle.target
+      @force += flee(@vehicle.target) if @vehicle.target
     end
 
     if @behaviors[:arrive]
-      @force = arrive(@vehicle.target, :fast) if @vehicle.target
+      @force += arrive(@vehicle.target, :fast) if @vehicle.target
     end
 
     if @behaviors[:pursuit]
-      @force = pursuit(@vehicle.evader) if @vehicle.evader
+      @force += pursuit(@vehicle.evader) if @vehicle.evader
     end
 
     if @behaviors[:evade]
-      @force = evade(@vehicle.pursuer) if @vehicle.pursuer
+      @force += evade(@vehicle.pursuer) if @vehicle.pursuer
     end
 
     if @behaviors[:wander]
-      @force = wander
+      @force += wander
     end
     
     return @force

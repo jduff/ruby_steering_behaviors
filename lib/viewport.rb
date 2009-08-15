@@ -21,6 +21,10 @@ class Viewport
     @events = Hash.new
   end
 
+  def mouse_pos
+    Vector2d.new(to_viewport_x(@window.mouse_x), to_viewport_y(@window.mouse_y))
+  end
+
   def on(event, &block)
     @events[event] = block
   end

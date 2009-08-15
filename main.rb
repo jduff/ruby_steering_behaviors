@@ -20,7 +20,7 @@ module Keys
   include Gosu::Button
   @keys = {
     KbLeft => :left,
-    MsLeft => :l_click,
+    MsLeft => :start,
     KbEscape => :cancel,
     KbUp => :zoom_in,
     KbDown => :zoom_out,
@@ -55,11 +55,9 @@ class Game < Gosu::Window
     init_render
     init_viewports
     init_entities
-    init_events
-    #init_pointer
+    init_pointer
   end
 
-  # Init methods
   def init_render
     Render.set_window(self)
 
@@ -77,51 +75,94 @@ class Game < Gosu::Window
   end
 
   def init_viewports
+    viewports = {
+      :cols => 2,
+      :rows => 1,
+      :margin => 10.0
+    }
+
+    viewport_w = (@w - (viewports[:cols] + 1) * viewports[:margin]) / viewports[:cols]
+    viewport_h = (@h - (viewports[:rows] + 1) * viewports[:margin]) / viewports[:rows]
+    viewport_virtual_w = 1000
+
     @viewports = Array.new
-    @viewports << Viewport.new(:x => 5, :y => 10,
-                               :w => 500, :h => 750,
-                               :virtual_w => 1000, :virtual_h => 1500,
-                               :window => self)
-    
-    
-    @viewports << Viewport.new(:x => 519, :y => 10,
-                               :w => 500, :h => 750,
-                               :virtual_w => 1000, :virtual_h => 1500,
-                               :window => self)
+    1.upto(viewports[:rows]) do |i|
+      1.upto(viewports[:cols]) do |j|
+        v = Viewport.new(:x => j*viewports[:margin] + (j-1) * viewport_w,
+                         :y => i*viewports[:margin] + (i-1) * viewport_h,
+                         :w => viewport_w,
+                         :h => viewport_h,
+                         :virtual_w => viewport_virtual_w,
+                         :virtual_h => viewport_h * viewport_virtual_w / viewport_w,
+                         :window => self)
+        
+        register_listener(v, :start)
+        register_listener(v, :zoom_in)
+        register_listener(v, :zoom_out)
+        @viewports << v
+      end
+    end
   end
 
   def init_entities
-    @viewports.each do |v|
-      v1 = Vehicle.new(:mass => 2.5, :max_speed => 250 + rand(100))
-      v1.pos.x = v.virtual_w/2
-      v1.pos.y = v.virtual_h/2
-
-      v2 = Vehicle.new(:mass => 3, :max_speed => 275 + rand(150), :color => 0xffff0000)
-      v2.pos.x = v.virtual_w/2 - 10
-      v2.pos.y = v.virtual_h/2 - 10
-
-      v3 = Vehicle.new(:mass => 2+rand(4), :max_speed => 30+rand(200), :color => 0xff00ff00)
-      v3.pos.x = v.virtual_w/2 + 10
-      v3.pos.y = v.virtual_h/2 + 10
-
-      v4 = Vehicle.new(:mass => 0.2, :max_speed => 230, :color => 0xff0cffc0)
-      v4.pos.x = v.virtual_w/2 + 10
-      v4.pos.y = v.virtual_h/2 + 10
-
-      v.entities << v1
-      v.entities << v2
-      v.entities << v3
-      v.entities << v4
-    end
-  end
-
-  def init_events
-    @viewports.each do |v|
-      register_listener(v, :l_click)
-      register_listener(v, :zoom_in)
-      register_listener(v, :zoom_out)
-    end
+    behaviors = {
+      :pursuit => :evader=,
+      :arrive => :target=,
+      :evade => :pursuer=,
+      :flee => :target=,
+      :seek => :target=
+    }
     
+    entities =
+      [
+       { :entities => [{:wander => nil},
+                       {:pursuit => lambda{|viewport| viewport.entities[0]}},
+                       {:arrive => lambda{|viewport| viewport.mouse_pos}},
+                       {:evade => lambda{|viewport| viewport.entities[0]}}]
+       },
+       { :entities => [{:wander => nil},
+                       {:wander => nil},
+                       {:wander => nil}]
+       }
+      ]
+    
+    vehicles =
+      [{ :mass => 0.2,
+         :max_speed => 250,
+         :color => 0xffffffff},
+       
+       { :mass => 2.5 + lambda{rand(3)}.call,
+         :max_speed => 250 + lambda{rand(100)}.call,
+         :color => 0xffff6600},
+       
+       { :mass => 3 + lambda{rand(5)}.call,
+         :max_speed => 550 + lambda{rand(50)}.call,
+         :color => 0xff00ff00},
+       
+       { :mass => 10,
+         :max_speed => 550 + lambda{rand(50)}.call,
+         :color => 0xff0033ff}]
+    
+    entities.each_with_index do |e, i|
+      e[:entities].each_with_index do |b, j|
+        v = Vehicle.new(vehicles[j])
+        v.pos.x = @viewports[i].virtual_w/2 + 10 * j
+        v.pos.y = @viewports[i].virtual_h/2 + 10 * j
+        @viewports[i].entities << v
+      end
+      
+      @viewports[i].on(:start) do |v|
+        e[:entities].each_with_index do |b, j|
+          b.each_pair do |behavior, exec|
+            v.entities[j].turn_on(behavior)
+            if exec
+              v.entities[j].send(behaviors[behavior], exec.call(v))
+            end
+          end
+        end
+      end
+    end
+
     @viewports.each do |v|
       v.on(:zoom_in) do
         v.virtual_w /= 1.05
@@ -135,35 +176,9 @@ class Game < Gosu::Window
         v.virtual_h *= 1.05
       end
     end
-
-    @viewports[0].on(:l_click) do |v|
-      v.entities[0].turn_on :arrive
-      v.entities[0].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
-      
-      v.entities[1].turn_on :pursuit
-      v.entities[1].evader = v.entities[3]
-      
-      v.entities[2].turn_on :seek
-      v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
-
-      v.entities[3].turn_on :wander
-    end
-    
-    @viewports[1].on(:l_click) do |v|
-      v.entities[0].turn_on :pursuit
-      v.entities[0].evader = v.entities[3]
-      
-      v.entities[1].turn_on :pursuit
-      v.entities[1].evader = v.entities[3]
-      
-      v.entities[2].turn_on :seek
-      v.entities[2].target = Vector2d.new(v.to_viewport_x(mouse_x), v.to_viewport_y(mouse_y))
-
-      v.entities[3].turn_on :wander
-    end
     
   end
-  
+
   def init_pointer
     set_mouse_position(@w/2, @h/2)
   end

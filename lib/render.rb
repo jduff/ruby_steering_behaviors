@@ -114,11 +114,8 @@ class Render
       @items = []
     end
 
-    def circle(cx, cy, r)
-      image(:circle,
-            :x => cx, :y => cy,
-            :factor => r*2/100.0,
-            :color => 0xffffffff)
+    def circle(opts)
+      image(:circle, opts.merge!(:factor => opts[:r]*2/100.0))
     end
 
     def borders(opts={})

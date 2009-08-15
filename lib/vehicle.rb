@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 class Vehicle
   attr_reader :pos, :vel, :heading,# :side,
-  :mass, :max_speed, :elapsed_time#, :max_force, :max_turn_rate
+  :mass, :max_speed, :elapsed_time, :color#, :max_force, :max_turn_rate
   attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
     default_opts = {
       :mass => 1,
       :max_speed => 150,
-      :color => 0xffffffff
+      :color => 0xffffffff,
+      :x => 0.0,
+      :y => 0.0
     }
     opts = default_opts.merge!(opts)
     
-    @pos = Vector2d.new
+    @pos = Vector2d.new(opts[:x], opts[:y])
     @accel = Vector2d.new
     @target = @evader = @pursuer = nil
     @vel = Vector2d.new
@@ -44,13 +46,7 @@ class Vehicle
 
   def draw
     Render.image(:starfighter, :x => @pos.x, :y => @pos.y, :angle => @heading.angle, :color => @color)
-    Render.image(:crosshair, :x => @target.x, :y => @target.y, :color => 0xff00ff00, :factor => 0.5, :z_order => :ui) if @target
     debug if Game.debug
-    Render.image(:crosshair, :x => @steering.predicted.x, :y => @steering.predicted.y) if @steering.predicted
-    to_world = @steering.target_world#Vector2d.point_to_world(@steering.wander_target, @heading, side, @pos) if @steering.wander_target
-    Render.image(:crosshair, :x => to_world.x, :y => to_world.y, :factor => 0.5, :color => 0xff0000ff, :z_order => :ui) if to_world
-    
-    Render.circle(@steering.wander_center.x, @steering.wander_center.y, @steering.wander_radius) if @steering.wander_center
   end
 
   def speed
@@ -63,15 +59,50 @@ class Vehicle
   
   def debug
     Render.text_list(:x => @pos.x, :y => 50 + @pos.y, :height => 30) do
-      Render.list_item "@pos #{@pos}"
+      Render.list_item "@mass #{@mass} @pos #{@pos}"
       Render.list_item("#{format("%.2f", @heading.angle)}° @heading #{@heading}")
       Render.list_item("#{format("%.2f", @vel.length)}u/s @vel #{@vel}") if @vel
       Render.list_item("#{format("%.2f", @accel.length)}u/s^2 @accel #{@accel}")
       
-      @steering.debug(:predicted, "%.2f", :length)
       @steering.debug(:distance_to_target, "%.2f")
       @steering.debug(:look_ahead_time, "%.2f")
       @steering.debug(:wander_angle, "%.2f")
     end
+
+    # do we have a target to arrive, seek or flee from?
+    Render.image(:crosshair,
+                 :x => @target.x,
+                 :y => @target.y,
+                 :color => @color,
+                 :factor => 0.5,
+                 :z_order => :ui) if @target
+
+    # predicted position in pursuit
+    Render.image(:crosshair,
+                 :x => @steering.predicted_pursuit.x,
+                 :y => @steering.predicted_pursuit.y,
+                 :color => @color) if @steering.predicted_pursuit
+
+    # predicted position in evade
+    Render.image(:crosshair,
+                 :x => @steering.predicted_evade.x,
+                 :y => @steering.predicted_evade.y,
+                 :color => @color) if @steering.predicted_evade
+
+    # wander target
+    to_world = @steering.target_world
+    Render.image(:crosshair,
+                 :x => to_world.x,
+                 :y => to_world.y,
+                 :factor => 0.5,
+                 :color => @color,
+                 :z_order => :ui) if to_world
+
+    # wander circle
+    Render.circle(:x => @steering.wander_center.x,
+                  :y => @steering.wander_center.y,
+                  :r => @steering.wander_radius,
+                  :color => @color) if @steering.wander_center
+    
   end
 end
