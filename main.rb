@@ -21,14 +21,15 @@ module ZOrder
 end
 
 module Keys
+  include Gosu::Button
   @keys = {
-    Gosu::Button::KbLeft => :left,
-    Gosu::Button::MsLeft => :l_click,
-    Gosu::Button::KbEscape => :cancel,
-    Gosu::Button::KbUp => :zoom_in,
-    Gosu::Button::KbDown => :zoom_out,
-    Gosu::Button::MsWheelUp => :zoom_in,
-    Gosu::Button::MsWheelDown => :zoom_out
+    KbLeft => :left,
+    MsLeft => :l_click,
+    KbEscape => :cancel,
+    KbUp => :zoom_in,
+    KbDown => :zoom_out,
+    MsWheelUp => :zoom_in,
+    MsWheelDown => :zoom_out
   }
 
   def self.[](key)
@@ -81,7 +82,8 @@ class Game < Gosu::Window
     @viewports << Viewport.new(:x => 5, :y => 10,
                                  :w => 500, :h => 750,
                                  :virtual_w => 1000, :virtual_h => 1500,
-                                 :window => self)
+                               :window => self)
+    
     
     @viewports << Viewport.new(:x => 519, :y => 10,
                                  :w => 500, :h => 750,
