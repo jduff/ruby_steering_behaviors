@@ -16,7 +16,9 @@ More to come!
 == Requirements
 * Gosu gem
 http://code.google.com/p/gosu/wiki/GettingStartedOnLinux
+
 http://code.google.com/p/gosu/wiki/GettingStartedOnOsx
+
 http://code.google.com/p/gosu/wiki/GettingStartedOnWindows
 
 == Operation

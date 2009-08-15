@@ -8,9 +8,9 @@ class FpsCounter
     @samples = samples
   end
 
-  def update(time_d)
+  def update(elapsed_t)
     @ticks += 1
-    @accum += time_d
+    @accum += elapsed_t
     if @ticks >= @samples
       @fps = 1000/(@accum/@ticks)
       @ticks = 0
