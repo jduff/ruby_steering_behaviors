@@ -3,26 +3,35 @@
 This is an implementation of the steering behaviors as seen in:
 http://www.red3d.com/cwr/steer/
 
-There is a basic app, with 4 behaviors implemented:
+There is a basic app, with 5 behaviors implemented:
 * Seek
 * Flee
 * Arrive
 * Pursuit
+* Wander
 
 More to come!
 
 
 == Requirements
 * Gosu gem
+http://code.google.com/p/gosu/wiki/GettingStartedOnLinux
+http://code.google.com/p/gosu/wiki/GettingStartedOnOsx
+http://code.google.com/p/gosu/wiki/GettingStartedOnWindows
 
 == Operation
-There are 3 agents in the demo app.
-Use your mouse, clicking on the screen will set a mark.
-The green agent will flee from it.
-The white agent will try to arrive to it.
-The red one will pursue the white one.
+There are 4 agents in the demo app.
+Use your mouse, clicking on the screen will set a mark that an agent will arrive to.
+The others are engaged in a cat-mouse game.
 
 Press D to hide the text. Esc to leave the demo.
+
+== Coming next
+Well, I said I wouldn't implement anything before I cleaned up. I lied, I just couldn't resist doing the "wander" behavior.
+But now it is time for a refactor.
+
+I want to improve the code for showing debug data.
+Maybe create some singletons for resource managing (images, sounds, rendering?)
 
 == Comments
 There is a Viewport class to that I created so I could play with my vehicles on a very large space. Think of it as a sandbox that you can configure to an arbitrary size. And right now it wraps around, treating the viewport as a toroid.
