@@ -7,7 +7,7 @@ class Vehicle
   def initialize(opts={})
     default_opts = {
       :max_force => 100,
-      :max_turn_rate => 300,
+      :max_turn_rate => 180,
       :mass => 1,
       :max_speed => 150,
       :color => 0xffffffff,
@@ -29,6 +29,12 @@ class Vehicle
     @steering = SteeringBehaviors.new(self)
   end
 
+  def self.create(type, weight)
+    # TODO: implement helper for easier definition of vehicles
+    # type => pursuer, evader, wanderer, seeker, fleer
+    # weight => very_light, light, normal, heavy, very_heavy
+  end
+
   def turn_on(behavior)
     @steering.behaviors[behavior] = true
   end
@@ -40,43 +46,19 @@ class Vehicle
     @accel = @force / @mass
     @accel.truncate!(@max_force)
 
+    rads = Math::PI / 180
     new_velocity = @vel + @accel * @elapsed_time / 1000.0
-    a1 = @heading.radians
-    a2 = new_velocity.radians
-    if (a1 - a2).abs <= Math::PI
-      @angle = (a1 - a2).abs
-    else
-      @angle = Math::PI * 2 - (a1 - a2).abs
-    end
-    #@angle = a1 + a2
-      
-    #@angle = Vector2d.angle(@heading, new_velocity)
-    max_angle = (@max_turn_rate * Math::PI / 180)  / 1000
+    @angle = Vector2d.angle(@heading, new_velocity) * rads
+    max_angle = (@max_turn_rate * rads  / 1000.0) * elapsed_t
     
-    if (a2.abs - a1.abs).abs > max_angle
-      puts "@angle#{@angle} > max_angle#{max_angle} #{@angle > max_angle}" if (a1.angle != 0)
-      if a2.abs > a1.abs
-        if new_velocity.x > @heading.x
-          signo = 1
-        else
-          signo = -1
-        end
-      else
-        if new_velocity.x > @heading.x
-          signo = -1
-        else
-          signo = 1
-        end
-      end
-          
-      @vel.x = signo * Math.sin(@angle) * new_velocity.length
-      @vel.y = signo * Math.cos(@angle) * new_velocity.length
-      #puts "@vel.x#{@vel.x} @vel.y#{@vel.y} newx#{newx} newy#{newy}"
-      @vel = new_velocity
+    if @angle.abs > max_angle
+      sign = Vector2d.sign(@heading, new_velocity)
+      corrected_angle = @heading.radians + max_angle * sign
+      @vel.x = Math.sin(corrected_angle) * new_velocity.length
+      @vel.y = - Math.cos(corrected_angle) * new_velocity.length
     else
       @vel = new_velocity
     end
-    
     
     @vel.truncate!(@max_speed)
     @pos += @vel * @elapsed_time / 1000.0

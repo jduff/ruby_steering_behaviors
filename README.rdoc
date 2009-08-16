@@ -22,23 +22,18 @@ http://code.google.com/p/gosu/wiki/GettingStartedOnOsx
 http://code.google.com/p/gosu/wiki/GettingStartedOnWindows
 
 == Operation
-Well, the operation has changed quite a bit.
-Now we have 2 viewports.
-One of them has 4 agents, one will arrive to whichever point you pick
-with your mouse. Two more are pursuing the last one, who's wandering
-around.
-The other one has three wandering vehicles.
+This is a showcase of the different behaviors implemented.
+Right now I have 2 viewports, I will implement more as I have more steering behaviors.
+
+One viewport has 4 agents, one will arrive to whichever point you pick with your mouse. One is pursuing and one is evading the last one, who's wandering around.
+
+The other viewport has three wandering vehicles.
 
 Press D to hide the text. Esc to leave the demo.
 
 == What's new
-Well, I've been refactoring the code for a little bit, and I've seen
-a bit of improvement already. :)
-I also improved how to show debug data. Now the targets are
-color-related (targets for arriving at a location, the wandering
-circle, predicted positions [for pursuit and evading]).
-And also, I have in place, a way to easily define the different
-scenarios I'm going to put on screen.
+Finally implemented the max turn rate restriction. No more crazy-spinning for my little agents. :)
+I also improved how to show debug data. Now the targets are color-related (targets for arriving at a location, the wandering circle, predicted positions [for pursuit and evading]).
 
-Right now I have 2 running, as described above. And it's trivial to
-add another column, or row.
+== Next plans
+I'm between adding flocking behaviors and implement a bit of my next game code. That's because I already have enough steering behaviors to implement the game logic. Hmmm, what should I do? :)

@@ -67,8 +67,8 @@ class SteeringBehaviors
   end
 
   def wander
-    @wander_radius = 250
-    @wander_distance = 140.0
+    @wander_radius = 120
+    @wander_distance = 240.0
     wander_jitter = 10
 
     @wander_target += Vector2d.new(clamped_rand * wander_jitter, clamped_rand * wander_jitter)

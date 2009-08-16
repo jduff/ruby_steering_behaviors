@@ -145,6 +145,7 @@ class Game < Gosu::Window
     
     entities.each_with_index do |e, i|
       e[:entities].each_with_index do |b, j|
+        #v = Vehicle.create(:heavy, :pursuer)
         v = Vehicle.new(vehicles[j])
         v.pos.x = @viewports[i].virtual_w/2 + 10 * j
         v.pos.y = @viewports[i].virtual_h/2 + 10 * j

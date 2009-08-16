@@ -106,6 +106,10 @@ class Vector2d
     return theta
   end
 
+  def sign(v2)
+    Vector2d.sign(self,v2)
+  end
+
   def radians
     theta = Math.acos(-@y/length)
     if @x < 0
@@ -125,14 +129,16 @@ class Vector2d
       dot_product = v1.normalize.dot(v2.normalize)
       dot_product = -1.0 if dot_product < -1.0
       dot_product = 1.0 if dot_product > 1.0
-      # signo = 1
-      # if dot_product > 0
-      #   signo = 1 if v2.x > v1.x
-      # else
-      #   signo = 1 if v1.x < v2.x
-      # end
         
       return Math.acos(dot_product) * 180 / Math::PI #* signo
+    end
+
+    def sign(v1, v2)
+      if v1.y * v2.x > v1.x*v2.y
+        return -1
+      else
+        return 1
+      end
     end
     
     def point_to_world(point, heading, side, pos)
