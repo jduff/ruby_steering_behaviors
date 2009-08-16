@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 class Vehicle
   attr_reader :pos, :vel, :heading,# :side,
-  :mass, :max_speed, :elapsed_time, :color#, :max_force, :max_turn_rate
+  :mass, :max_speed, :elapsed_time, :color, :max_force, :max_turn_rate
   attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
     default_opts = {
+      :max_force => 100,
+      :max_turn_rate => 300,
       :mass => 1,
       :max_speed => 150,
       :color => 0xffffffff,
-      :x => 0.0,
-      :y => 0.0
+      :x => 0,
+      :y => 0
     }
     opts = default_opts.merge!(opts)
     
@@ -21,6 +23,8 @@ class Vehicle
     @heading = Vector2d.new(0,-1)
     @mass = Float(opts[:mass])
     @max_speed = Float(opts[:max_speed])
+    @max_force = Float(opts[:max_force])
+    @max_turn_rate = Float(opts[:max_turn_rate])
     @color = opts[:color]
     @steering = SteeringBehaviors.new(self)
   end
@@ -34,8 +38,46 @@ class Vehicle
     
     @force = @steering.calculate
     @accel = @force / @mass
+    @accel.truncate!(@max_force)
+
+    new_velocity = @vel + @accel * @elapsed_time / 1000.0
+    a1 = @heading.radians
+    a2 = new_velocity.radians
+    if (a1 - a2).abs <= Math::PI
+      @angle = (a1 - a2).abs
+    else
+      @angle = Math::PI * 2 - (a1 - a2).abs
+    end
+    #@angle = a1 + a2
+      
+    #@angle = Vector2d.angle(@heading, new_velocity)
+    max_angle = (@max_turn_rate * Math::PI / 180)  / 1000
     
-    @vel += @accel * @elapsed_time / 1000.0
+    if (a2.abs - a1.abs).abs > max_angle
+      puts "@angle#{@angle} > max_angle#{max_angle} #{@angle > max_angle}" if (a1.angle != 0)
+      if a2.abs > a1.abs
+        if new_velocity.x > @heading.x
+          signo = 1
+        else
+          signo = -1
+        end
+      else
+        if new_velocity.x > @heading.x
+          signo = -1
+        else
+          signo = 1
+        end
+      end
+          
+      @vel.x = signo * Math.sin(@angle) * new_velocity.length
+      @vel.y = signo * Math.cos(@angle) * new_velocity.length
+      #puts "@vel.x#{@vel.x} @vel.y#{@vel.y} newx#{newx} newy#{newy}"
+      @vel = new_velocity
+    else
+      @vel = new_velocity
+    end
+    
+    
     @vel.truncate!(@max_speed)
     @pos += @vel * @elapsed_time / 1000.0
 
@@ -63,6 +105,7 @@ class Vehicle
       Render.list_item("#{format("%.2f", @heading.angle)}° @heading #{@heading}")
       Render.list_item("#{format("%.2f", @vel.length)}u/s @vel #{@vel}") if @vel
       Render.list_item("#{format("%.2f", @accel.length)}u/s^2 @accel #{@accel}")
+      Render.list_item("@angle #{@angle}")
       
       @steering.debug(:distance_to_target, "%.2f")
       @steering.debug(:look_ahead_time, "%.2f")
