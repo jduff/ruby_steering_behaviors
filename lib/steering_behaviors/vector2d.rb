@@ -129,7 +129,7 @@ class Vector2d
       dot_product = -1.0 if dot_product < -1.0
       dot_product = 1.0 if dot_product > 1.0
         
-      return Math.acos(dot_product) * 180 / Math::PI #* signo
+      return Math.acos(dot_product) * 180 / Math::PI #* sign(v1, v2)
     end
 
     def sign(v1, v2)
@@ -145,9 +145,6 @@ class Vector2d
       
       x = -Math.sin(local_angle) * point.length
       y = Math.cos(local_angle) * point.length
-      
-      #x = point.x * Math.cos(local_angle) + point.y * Math.sin(local_angle)
-      #y = -point.x * Math.sin(local_angle) + point.y * Math.cos(local_angle)
       
       world_point = Vector2d.new(x,y) + pos
       return world_point
