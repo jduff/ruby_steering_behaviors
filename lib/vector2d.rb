@@ -124,7 +124,6 @@ class Vector2d
   end
 
   class << self
-
     def angle(v1, v2)
       dot_product = v1.normalize.dot(v2.normalize)
       dot_product = -1.0 if dot_product < -1.0
@@ -153,13 +152,6 @@ class Vector2d
       world_point = Vector2d.new(x,y) + pos
       return world_point
     end
-    
-    def debug(vars)
-      cadena = ""
-      vars.each_pair do |k,v|
-        cadena << "#{k}(#{v}) "
-      end
-      puts cadena
-    end
   end
+  
 end

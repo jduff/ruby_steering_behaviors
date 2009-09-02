@@ -7,7 +7,7 @@ class Vehicle
   def initialize(opts={})
     default_opts = {
       :max_force => 100,
-      :max_turn_rate => 180,
+      :max_turn_rate => 360,
       :mass => 1,
       :max_speed => 150,
       :color => 0xffffffff,
@@ -35,8 +35,12 @@ class Vehicle
     # weight => very_light, light, normal, heavy, very_heavy
   end
 
-  def turn_on(behavior)
-    @steering.behaviors[behavior] = true
+  def activate(behavior)
+    @steering.activate(behavior)
+  end
+
+  def deactivate(behavior)
+    @steering.deactivate(behavior)
   end
 
   def update(elapsed_t)
@@ -47,9 +51,9 @@ class Vehicle
     @accel.truncate!(@max_force)
 
     rads = Math::PI / 180
-    new_velocity = @vel + @accel * @elapsed_time / 1000.0
+    new_velocity = @vel + @accel * @elapsed_time
     @angle = Vector2d.angle(@heading, new_velocity) * rads
-    max_angle = (@max_turn_rate * rads  / 1000.0) * elapsed_t
+    max_angle = @max_turn_rate * rads * elapsed_t
     
     if @angle.abs > max_angle
       sign = Vector2d.sign(@heading, new_velocity)
@@ -61,7 +65,7 @@ class Vehicle
     end
     
     @vel.truncate!(@max_speed)
-    @pos += @vel * @elapsed_time / 1000.0
+    @pos += @vel * @elapsed_time
 
     if @vel.length_sq > 0.0001
       @heading = @vel.normalize
@@ -80,7 +84,7 @@ class Vehicle
   def side
     @heading.perp
   end
-  
+
   def debug
     Render.text_list(:x => @pos.x, :y => 50 + @pos.y, :height => 30) do
       Render.list_item "@mass #{@mass} @pos #{@pos}"
@@ -88,10 +92,12 @@ class Vehicle
       Render.list_item("#{format("%.2f", @vel.length)}u/s @vel #{@vel}") if @vel
       Render.list_item("#{format("%.2f", @accel.length)}u/s^2 @accel #{@accel}")
       Render.list_item("@angle #{@angle}")
-      
-      @steering.debug(:distance_to_target, "%.2f")
-      @steering.debug(:look_ahead_time, "%.2f")
-      @steering.debug(:wander_angle, "%.2f")
+
+      Render.list_item("@distance_to_target #{format("%.2f", @steering.distance_to_target)}") if @steering.distance_to_target
+
+      Render.list_item("@look_ahead_time #{format("%.2f", @steering.look_ahead_time)}") if @steering.look_ahead_time
+
+      Render.list_item("@wander_angle #{format("%.2f", @steering.wander_angle)}") if @steering.wander_angle
     end
 
     # do we have a target to arrive, seek or flee from?

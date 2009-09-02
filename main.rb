@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
+# Add our lib directory to the load path
 dir = File.expand_path(File.dirname(__FILE__) + '/lib')
 $LOAD_PATH.unshift(dir)
 
+# Require rubygems if available
 begin
   require 'rubygems'
 rescue LoadError
@@ -155,7 +158,7 @@ class Game < Gosu::Window
       @viewports[i].on(:start) do |v|
         e[:entities].each_with_index do |b, j|
           b.each_pair do |behavior, exec|
-            v.entities[j].turn_on(behavior)
+            v.entities[j].activate(behavior)
             if exec
               v.entities[j].send(behaviors[behavior], exec.call(v))
             end
@@ -192,7 +195,7 @@ class Game < Gosu::Window
     
     @fps.update(elapsed_t)
     @viewports.each do |v|
-      v.update(elapsed_t)
+      v.update(elapsed_t/1000.0)
     end
   end
 
