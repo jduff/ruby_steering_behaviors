@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 class Vehicle
-  attr_reader :pos, :vel, :heading,# :side,
-  :mass, :max_speed, :elapsed_time, :color, :max_force, :max_turn_rate
+  attr_reader :pos, :vel, :heading, :mass, :color,
+  :max_speed, :max_force, :max_turn_rate
   attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
@@ -44,14 +44,12 @@ class Vehicle
   end
 
   def update(elapsed_t)
-    @elapsed_time = elapsed_t
-    
     @force = @steering.calculate
     @accel = @force / @mass
     @accel.truncate!(@max_force)
 
     rads = Math::PI / 180
-    new_velocity = @vel + @accel * @elapsed_time
+    new_velocity = @vel + @accel * elapsed_t
     @angle = Vector2d.angle(@heading, new_velocity) * rads
     max_angle = @max_turn_rate * rads * elapsed_t
     
@@ -65,7 +63,7 @@ class Vehicle
     end
     
     @vel.truncate!(@max_speed)
-    @pos += @vel * @elapsed_time
+    @pos += @vel * elapsed_t
 
     if @vel.length_sq > 0.0001
       @heading = @vel.normalize
