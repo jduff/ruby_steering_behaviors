@@ -6,8 +6,8 @@ class Vehicle
 
   def initialize(opts={})
     default_opts = {
-      :max_force => 100,
-      :max_turn_rate => 360,
+      :max_force => 500,
+      :max_turn_rate => 160,
       :mass => 1,
       :max_speed => 150,
       :color => 0xffffffff,
