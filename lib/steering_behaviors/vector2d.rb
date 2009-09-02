@@ -129,7 +129,7 @@ class Vector2d
       dot_product = -1.0 if dot_product < -1.0
       dot_product = 1.0 if dot_product > 1.0
         
-      return Math.acos(dot_product) * 180 / Math::PI #* sign(v1, v2)
+      return Math.acos(dot_product) * 180 / Math::PI
     end
 
     def sign(v1, v2)
