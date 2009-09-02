@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # Add our lib directory to the load path
-dir = File.expand_path(File.dirname(__FILE__) + '/lib')
-$LOAD_PATH.unshift(dir)
+lib_dir = File.expand_path(File.join(File.dirname(__FILE__), 'lib'))
+$LOAD_PATH.unshift(lib_dir)
 
 # Require rubygems if available
 begin
@@ -12,9 +12,9 @@ end
 
 require 'render'
 require 'fps'
-require 'steering_behaviors'
-require 'vector2d'
-require 'vehicle'
+require 'steering_behaviors/steering_behaviors'
+require 'steering_behaviors/vector2d'
+require 'steering_behaviors/vehicle'
 require 'gosu'
 require 'viewport'
 require 'set'
