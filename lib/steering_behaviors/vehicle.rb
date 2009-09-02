@@ -1,31 +1,33 @@
 # -*- coding: utf-8 -*-
 class Vehicle
-  attr_reader :pos, :vel, :heading, :mass, :color,
-  :max_speed, :max_force, :max_turn_rate
+  attr_reader :pos, :vel, :heading, :mass, :color, :max_speed, :max_force, :max_turn_rate
   attr_accessor :target, :evader, :pursuer
 
   def initialize(opts={})
     default_opts = {
-      :max_force => 500,
-      :max_turn_rate => 160,
-      :mass => 1,
-      :max_speed => 150,
-      :color => 0xffffffff,
       :x => 0,
-      :y => 0
+      :y => 0,
+      :mass => 1,
+      :color => 0xffffffff,
+      :max_speed => 150,
+      :max_force => 500,
+      :max_turn_rate => 160
     }
     opts = default_opts.merge!(opts)
+
     
-    @pos = Vector2d.new(opts[:x], opts[:y])
-    @accel = Vector2d.new
     @target = @evader = @pursuer = nil
     @vel = Vector2d.new
+    @accel = Vector2d.new
     @heading = Vector2d.new(0,-1)
+    
+    @pos = Vector2d.new(opts[:x], opts[:y])
     @mass = Float(opts[:mass])
+    @color = opts[:color]
     @max_speed = Float(opts[:max_speed])
     @max_force = Float(opts[:max_force])
     @max_turn_rate = Float(opts[:max_turn_rate])
-    @color = opts[:color]
+    
     @steering = SteeringBehaviors.new(self)
   end
 
